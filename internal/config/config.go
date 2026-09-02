@@ -123,6 +123,7 @@ func Load() (*Config, error) {
 		}
 		c.DBPath = filepath.Join(home, ".local", "share", "kino", "kino.db")
 	}
+	c.DBPath = expandHome(c.DBPath)
 
 	if err := c.Tuning.Validate(); err != nil {
 		where := c.LoadedFrom
@@ -213,4 +214,25 @@ func readEnvFile(path string) (map[string]string, error) {
 		out[strings.TrimSpace(key)] = val
 	}
 	return out, sc.Err()
+}
+
+// expandHome turns a leading ~ into the home directory.
+//
+// A config file is written by hand, and "~/..." is what a person writes there.
+// The shell expands it for a flag but not for a value inside a file, so without
+// this the path is taken literally and SQLite creates a directory actually
+// named "~" in whatever the working directory happens to be — a database that
+// silently appears in two places depending on where the command was run.
+func expandHome(p string) string {
+	if p != "~" && !strings.HasPrefix(p, "~/") {
+		return p
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return p
+	}
+	if p == "~" {
+		return home
+	}
+	return filepath.Join(home, p[2:])
 }

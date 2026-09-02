@@ -48,3 +48,28 @@ func TestParseID(t *testing.T) {
 		t.Errorf("parseID(123) = %d", id)
 	}
 }
+
+// The help text lists a few suffixes; the parser accepts one more. Documenting
+// "--last 1y" for the initial database fill only works if it really parses.
+func TestParseDaysAcceptsEverySuffix(t *testing.T) {
+	for _, c := range []struct {
+		in   string
+		want int
+	}{
+		{"7d", 7}, {"2w", 14}, {"3m", 90}, {"1y", 365}, {"30", 30}, {"1Y", 365},
+	} {
+		got, err := parseDays(c.in)
+		if err != nil {
+			t.Errorf("%q: %v", c.in, err)
+			continue
+		}
+		if got != c.want {
+			t.Errorf("%q = %d days, want %d", c.in, got, c.want)
+		}
+	}
+	for _, bad := range []string{"", "0d", "-5", "неделя"} {
+		if _, err := parseDays(bad); err == nil {
+			t.Errorf("%q should be rejected", bad)
+		}
+	}
+}

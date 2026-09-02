@@ -226,7 +226,7 @@ func newUpdateMoviesCmd() *cobra.Command {
 	}
 
 	f := cmd.Flags()
-	f.StringVar(&last, "last", "", "window relative to today: 7d, 2w, 1m")
+	f.StringVar(&last, "last", "", "window relative to today: 7d, 2w, 1m, 1y")
 	f.StringVar(&from, "from", "", "window start, YYYY-MM-DD")
 	f.StringVar(&to, "to", "", "window end, YYYY-MM-DD (default today)")
 	f.StringVar(&region, "region", "", "ISO 3166-1 region the release date belongs to (default from config)")

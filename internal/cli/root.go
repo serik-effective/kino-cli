@@ -166,7 +166,7 @@ func parseWindow(last, from, to string) (string, string, error) {
 	return from, to, nil
 }
 
-// parseDays accepts 7d, 2w, 3m or a bare number of days.
+// parseDays accepts 7d, 2w, 3m, 1y or a bare number of days.
 func parseDays(s string) (int, error) {
 	s = strings.TrimSpace(strings.ToLower(s))
 	mult := 1
@@ -184,7 +184,7 @@ func parseDays(s string) (int, error) {
 	}
 	n, err := strconv.Atoi(s)
 	if err != nil || n <= 0 {
-		return 0, fmt.Errorf("bad period %q, want e.g. 7d, 2w, 3m", s)
+		return 0, fmt.Errorf("bad period %q, want e.g. 7d, 2w, 3m, 1y", s)
 	}
 	return n * mult, nil
 }

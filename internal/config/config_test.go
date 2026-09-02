@@ -164,3 +164,39 @@ func TestTemplateRoundTripsToDefaults(t *testing.T) {
 		t.Error("WriteTemplate must refuse to overwrite an existing config")
 	}
 }
+
+// "~/..." is what a person writes in a config file, and nothing expands it
+// there. Taken literally, SQLite creates a directory named "~" wherever the
+// command happened to run — so the database quietly exists in several places.
+func TestDBPathExpandsTilde(t *testing.T) {
+	home := withHome(t)
+	path := filepath.Join(home, ".config", "kino", "config.toml")
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	body := "[general]\ndb_path = \"~/.local/share/kino-cli/kino.db\"\n"
+	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	c, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(home, ".local", "share", "kino-cli", "kino.db")
+	if c.DBPath != want {
+		t.Errorf("db_path = %q, want %q", c.DBPath, want)
+	}
+
+	// An absolute path must survive untouched.
+	body = "[general]\ndb_path = \"/srv/kino/kino.db\"\n"
+	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if c, err = Load(); err != nil {
+		t.Fatal(err)
+	}
+	if c.DBPath != "/srv/kino/kino.db" {
+		t.Errorf("absolute path was rewritten to %q", c.DBPath)
+	}
+}

@@ -124,3 +124,37 @@ sqlite3 ~/.local/share/kino/kino.db "VACUUM INTO '/tmp/kino-snapshot.db'"
 `config check`. После этого `install.sh` видит существующий файл и отказывается
 его перезаписывать — защита от затирания более свежей серверной базы срабатывает
 против переноса. Проверять `SELECT count(*) FROM movies` после установки.
+
+
+## Первичное наполнение пустой базы
+
+Порядок важен: бесплатное и объёмное раньше квотируемого. ~30 минут.
+
+```bash
+kino update imdb                                    # 1.7 млн оценок, ~50 с
+kino update movies --last 1y --min-votes 50         # TMDB, без лимита
+kino update movies --last 1y --original-language ru --release-type any
+kino update kp --from-year 2024 --min-votes 10 --add-missing   # ~17 запросов
+kino refresh ratings --limit 2000                   # бесплатно
+```
+
+Квоту тратит только четвёртая строка. Она идемпотентна: прервалась — повторить.
+
+## Совместное проживание с чужим kino
+
+На сервере Hermes нашёлся Python-проект `~/workspace/kino`, чей конфиг по
+умолчанию указывает на тот же `~/.local/share/kino/kino.db`. Два процесса,
+пишущих в один файл SQLite, испортят его друг другу.
+
+Развести, не трогая чужой проект:
+
+```toml
+# ~/.config/kino/config.toml
+[general]
+db_path = "~/.local/share/kino-cli/kino.db"
+```
+
+Тильда раскрывается (с 2026-09-02; до этого путь брался буквально и SQLite
+создавал каталог с именем `~` в рабочем каталоге — база тихо появлялась в
+нескольких местах). Работают также `KINO_DB` и `--db`, но конфиг надёжнее:
+действует и на крон, и на агента.
