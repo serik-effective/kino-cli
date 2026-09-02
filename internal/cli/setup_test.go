@@ -3,6 +3,7 @@ package cli
 import (
 	"bufio"
 	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -144,5 +145,48 @@ func TestFirstFillStopsOnFailure(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "нет-такой-команды") {
 		t.Errorf("error should name the step, got: %v", err)
+	}
+}
+
+// config init must write where Load will read. Writing to the default path
+// while KINO_CONFIG points elsewhere creates a file the next run ignores — and
+// can clobber a real config nobody meant to touch. That is how this session
+// accidentally created a config.toml in a live installation.
+func TestConfigInitWritesWhereLoadReads(t *testing.T) {
+	target := t.TempDir() + "/elsewhere.toml"
+	t.Setenv("KINO_CONFIG", target)
+
+	root := newRootCmd()
+	root.SetArgs([]string{"config", "init"})
+	root.SetOut(io.Discard)
+	if err := root.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(target); err != nil {
+		t.Fatalf("config init did not write to KINO_CONFIG: %v", err)
+	}
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.LoadedFrom != target {
+		t.Errorf("Load read %q, but init wrote %q", cfg.LoadedFrom, target)
+	}
+}
+
+// The explicit flag wins over the environment.
+func TestConfigInitPathFlag(t *testing.T) {
+	t.Setenv("KINO_CONFIG", t.TempDir()+"/ignored.toml")
+	want := t.TempDir() + "/chosen.toml"
+
+	root := newRootCmd()
+	root.SetArgs([]string{"config", "init", "--path", want})
+	root.SetOut(io.Discard)
+	if err := root.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(want); err != nil {
+		t.Errorf("--path was ignored: %v", err)
 	}
 }

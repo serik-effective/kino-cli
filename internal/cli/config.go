@@ -85,12 +85,12 @@ func mask(s string) string {
 // out, so the ranking model is visible and editable from one place.
 func newConfigInitCmd() *cobra.Command {
 	var path string
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Write a starter config.toml with the default tuning",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if path == "" {
-				path = config.DefaultPath()
+				path = configTarget()
 			}
 			if err := config.WriteTemplate(path, config.DefaultTuning()); err != nil {
 				return err
@@ -99,6 +99,20 @@ func newConfigInitCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().StringVar(&path, "path", "",
+		"куда записать (по умолчанию KINO_CONFIG или ~/.config/kino/config.toml)")
+	return cmd
+}
+
+// configTarget is the file the config commands write to. It has to agree with
+// what Load reads: honouring KINO_CONFIG when reading but writing somewhere
+// else means "kino config init" quietly creates a file the next run ignores —
+// or, worse, overwrites one nobody meant to touch.
+func configTarget() string {
+	if p := os.Getenv("KINO_CONFIG"); p != "" {
+		return p
+	}
+	return config.DefaultPath()
 }
 
 // newConfigShowCmd prints the tuning actually in effect. "kino --why" explains

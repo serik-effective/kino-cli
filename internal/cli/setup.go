@@ -47,10 +47,7 @@ func newSetupCmd() *cobra.Command {
 
 func runSetup(cmd *cobra.Command, force bool) error {
 	out := cmd.OutOrStdout()
-	path := os.Getenv("KINO_CONFIG")
-	if path == "" {
-		path = config.DefaultPath()
-	}
+	path := configTarget()
 
 	exists := false
 	if _, err := os.Stat(path); err == nil {
