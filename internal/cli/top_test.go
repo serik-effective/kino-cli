@@ -235,3 +235,39 @@ func TestGenreShorthandsAcceptBothLanguages(t *testing.T) {
 		t.Error("an unknown word must not resolve to a genre")
 	}
 }
+
+// The positional grammar is invisible to cobra, so completion has to describe
+// it by hand. Without this, "kino ru<TAB>" completes to ru-list — a different
+// command that lists rather than ranks.
+func TestCompletionOffersTrackAndGenres(t *testing.T) {
+	has := func(out []string, prefix string) bool {
+		for _, s := range out {
+			if strings.HasPrefix(s, prefix+"\t") || s == prefix {
+				return true
+			}
+		}
+		return false
+	}
+
+	out, _ := completeTopArgs(nil, nil, "")
+	for _, want := range []string{"ru", "комедия", "comedy", "военный"} {
+		if !has(out, want) {
+			t.Errorf("completion does not offer %q", want)
+		}
+	}
+
+	// The track takes one slot: offering it twice would suggest a command that
+	// does not parse.
+	out, _ = completeTopArgs(nil, []string{"ru"}, "")
+	if has(out, "ru") {
+		t.Error("ru must not be offered when it is already present")
+	}
+	if !has(out, "комедия") {
+		t.Error("a genre must still be offered after the track")
+	}
+
+	// Nothing but a day count can follow a track and a genre.
+	if out, _ = completeTopArgs(nil, []string{"ru", "комедия"}, ""); len(out) != 0 {
+		t.Errorf("nothing should be offered after track+genre, got %v", out)
+	}
+}

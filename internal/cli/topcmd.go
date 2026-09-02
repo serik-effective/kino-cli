@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -80,6 +81,10 @@ func bindTop(root *cobra.Command) {
 
 	root.RunE = run
 	root.Args = cobra.ArbitraryArgs
+	// The positional grammar is invisible to cobra: "ru" and the Russian genre
+	// spellings are not subcommands, so without this the shell completes them
+	// to nothing — or, worse, to "ru-list", which is a different command.
+	root.ValidArgsFunction = completeTopArgs
 	root.Flags().BoolVar(&all, "all", false, "show every film that passes, not just the top few")
 	root.Flags().BoolVar(&why, "why", false, "print the score breakdown for each film")
 	root.Flags().BoolVar(&seen, "seen", false, "не скрывать фильмы, отмеченные просмотренными")
@@ -141,4 +146,25 @@ func parseTopArgs(args []string, a *app, all, why bool) (topOpts, error) {
 		}
 	}
 	return o, nil
+}
+
+// completeTopArgs suggests what the positional grammar accepts: the track, then
+// genres in both spellings. Days are a free number, so nothing is offered for
+// them.
+func completeTopArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// One track and one genre are all the grammar takes; after that only a
+	// number can follow, and numbers cannot be suggested.
+	if len(args) >= 2 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	var out []string
+	if !slices.Contains(args, "ru") {
+		out = append(out, "ru\tрусскоязычное кино, ранжирование по Кинопоиску")
+	}
+	for alias, spellings := range genreAliases {
+		out = append(out, alias+"\tжанр: "+spellings[0], spellings[0]+"\tжанр")
+	}
+	slices.Sort(out)
+	return out, cobra.ShellCompDirectiveNoFileComp
 }
