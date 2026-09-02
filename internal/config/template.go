@@ -47,6 +47,11 @@ min_tmdb_votes = %d
 min_kp_votes   = %d
 min_runtime    = %d    # minutes; drops shorts
 
+# Разрыв между годом производства и датой цифрового релиза. Старый фильм,
+# доехавший до нового сервиса, — не новинка. 0 отключает проверку, и тогда
+# переиздания снова попадают в выдачу (то же делает флаг --reissues).
+max_release_gap_years = %d
+
 # Terms of the final score. Must sum to 1.0.
 [weights]
 imdb       = %.2f
@@ -99,6 +104,7 @@ gap_min_votes      = %d
 		tomlString(s.TMDBToken), tomlString(s.OMDBKey), tomlString(s.KinopoiskKey),
 		t.Defaults.Period, t.Defaults.Limit, t.Defaults.RuPeriod, t.Defaults.IMDbYearFloor,
 		t.Thresholds.MinIMDbVotes, t.Thresholds.MinTMDBVotes, t.Thresholds.MinKPVotes, t.Thresholds.MinRuntime,
+		t.Thresholds.MaxReleaseGapYears,
 		t.Weights.IMDb, t.Weights.TMDB, t.Weights.Confidence, t.Weights.Mainstream, t.Weights.Freshness,
 		t.Bayes.IMDbM, t.Bayes.IMDbMean, t.Bayes.TMDBM, t.Bayes.TMDBMean, t.Bayes.KPM, t.Bayes.KPMean,
 		t.Arthouse.Low, t.Arthouse.High, t.Arthouse.MaxPenalty,

@@ -59,9 +59,10 @@ func lookupGenre(word string) ([]string, bool) {
 // product: three films worth watching tonight.
 func bindTop(root *cobra.Command) {
 	var (
-		all  bool
-		why  bool
-		seen bool
+		all      bool
+		why      bool
+		seen     bool
+		reissues bool
 	)
 
 	run := func(cmd *cobra.Command, args []string) error {
@@ -76,6 +77,7 @@ func bindTop(root *cobra.Command) {
 			return err
 		}
 		o.seen = seen
+		o.reissues = reissues
 		return runTop(cmd.Context(), cmd.OutOrStdout(), a, o)
 	}
 
@@ -88,6 +90,8 @@ func bindTop(root *cobra.Command) {
 	root.Flags().BoolVar(&all, "all", false, "show every film that passes, not just the top few")
 	root.Flags().BoolVar(&why, "why", false, "print the score breakdown for each film")
 	root.Flags().BoolVar(&seen, "seen", false, "не скрывать фильмы, отмеченные просмотренными")
+	root.Flags().BoolVar(&reissues, "reissues", false,
+		"включить переиздания: старые фильмы, только что появившиеся в цифре")
 	root.Example = `  kino              TOP-3 за 7 дней
   kino 30           TOP-3 за 30 дней
   kino ru           российское кино за 30 дней

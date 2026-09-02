@@ -56,6 +56,9 @@ type Thresholds struct {
 	// MinRuntime drops shorts. Concerts and stand-up are excluded by IMDb
 	// titleType at import time, not here.
 	MinRuntime int `toml:"min_runtime"`
+	// MaxReleaseGapYears drops catalogue re-releases: an old film arriving on a
+	// new service is not a new film. Zero turns the check off.
+	MaxReleaseGapYears int `toml:"max_release_gap_years"`
 }
 
 // Weights are the terms of the final score and must sum to 1.
@@ -170,6 +173,9 @@ func DefaultTuning() Tuning {
 			MinTMDBVotes: 100,
 			MinKPVotes:   3000,
 			MinRuntime:   70,
+			// Two years is the slack a delayed indie release needs; three or
+			// more is a catalogue title landing on a new service.
+			MaxReleaseGapYears: 2,
 		},
 		Weights: Weights{
 			IMDb:       0.45,

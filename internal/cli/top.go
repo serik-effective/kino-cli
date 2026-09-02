@@ -35,7 +35,9 @@ type topOpts struct {
 	// empty marks a database with no films at all, which needs different
 	// advice from a window that simply had no winners.
 	empty bool
-	nowFn func() time.Time
+	// reissues keeps catalogue re-releases in the list.
+	reissues bool
+	nowFn    func() time.Time
 }
 
 // runTop is the whole product in one function: pick the window, take everything
@@ -60,6 +62,7 @@ func runTop(ctx context.Context, w io.Writer, a *app, o topOpts) error {
 		RussianTrack:   o.ru,
 		Genres:         o.genreAny,
 		MinRuntime:     t.Thresholds.MinRuntime,
+		MaxYearGap:     yearGap(t, o),
 		IncludeWatched: o.seen,
 	})
 	if err != nil {
@@ -418,4 +421,13 @@ func trim(s string, n int) string {
 		return s
 	}
 	return string(r[:n-1]) + "…"
+}
+
+// yearGap is the re-release cutoff actually applied. "--reissues" turns it off,
+// which is the only way to ask for an old film that just became watchable.
+func yearGap(t config.Tuning, o topOpts) int {
+	if o.reissues {
+		return 0
+	}
+	return t.Thresholds.MaxReleaseGapYears
 }

@@ -61,6 +61,16 @@ type CandidateQuery struct {
 	// MinRuntime drops shorts. Films with no known runtime are kept: an unknown
 	// runtime is not evidence of a short, and IMDb fills most of them in.
 	MinRuntime int
+	// MaxYearGap drops catalogue re-releases: a film whose digital date is this
+	// many years after it was made is not new, it is an old film that just
+	// landed on another service. Zero disables the check.
+	//
+	// The general track already takes the EARLIEST type-4 release for exactly
+	// this reason, and it is not enough: discovery only ever walks recent
+	// windows, so a 2015 film whose 2026 Starz release is the only row we ever
+	// stored has a "minimum" of 2026. The gap to the production year is the
+	// only signal that survives incomplete release history.
+	MaxYearGap int
 	// IncludeWatched keeps films the viewer has already seen. They are hidden by
 	// default: a recommendation you have acted on is no longer a recommendation.
 	IncludeWatched bool
@@ -128,6 +138,14 @@ SELECT m.tmdb_id, COALESCE(m.imdb_id,''), m.title, COALESCE(m.title_ru,''),
 	sb.WriteString(" AND " + digitalExpr + " >= ? AND " + digitalExpr + " <= ?")
 	args = append(args, q.From.Format("2006-01-02"), q.To.Format("2006-01-02"))
 
+	if q.MaxYearGap > 0 {
+		// A film with no known year is kept: an unknown year is not evidence of
+		// a re-release, and dropping it would hide genuinely new films whose
+		// metadata is thin.
+		sb.WriteString(" AND (m.year IS NULL OR m.year = 0 OR CAST(strftime('%Y', " +
+			digitalExpr + ") AS INTEGER) - m.year <= ?)")
+		args = append(args, q.MaxYearGap)
+	}
 	if q.MinRuntime > 0 {
 		// runtime 0 means "unknown", which must not be read as "a short".
 		sb.WriteString(" AND (m.runtime IS NULL OR m.runtime = 0 OR m.runtime >= ?)")

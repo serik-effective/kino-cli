@@ -139,6 +139,11 @@ func newConfigShowCmd() *cobra.Command {
 			fmt.Fprintf(w, "\nдопуск (любой из)\timdb>=%d, tmdb>=%d, kp>=%d\n",
 				t.Thresholds.MinIMDbVotes, t.Thresholds.MinTMDBVotes, t.Thresholds.MinKPVotes)
 			fmt.Fprintf(w, "мин. хронометраж\t%d мин\n", t.Thresholds.MinRuntime)
+			gap := "выключен"
+			if t.Thresholds.MaxReleaseGapYears > 0 {
+				gap = fmt.Sprintf("не старше %d лет на момент цифры", t.Thresholds.MaxReleaseGapYears)
+			}
+			fmt.Fprintf(w, "переиздания\t%s\n", gap)
 			fmt.Fprintf(w, "\nвеса\timdb %.2f · tmdb %.2f · confidence %.2f · mainstream %.2f · freshness %.2f\n",
 				t.Weights.IMDb, t.Weights.TMDB, t.Weights.Confidence, t.Weights.Mainstream, t.Weights.Freshness)
 			fmt.Fprintf(w, "сумма весов\t%.2f\n", t.Weights.Sum())
