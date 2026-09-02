@@ -369,6 +369,8 @@ kino show tt1285016
 из чего она сложилась и что её понизило.
 
 - [docs/AGENTS.md](docs/AGENTS.md) — контракт ответа и правила чтения
+- [docs/AGENT-PLAYBOOK.md](docs/AGENT-PLAYBOOK.md) — что уже пошло не так на
+  живой установке и как этого не повторить
 - [skills/kino/SKILL.md](skills/kino/SKILL.md) — готовый скилл
 - [docs/INTEGRATION.md](docs/INTEGRATION.md) — как подключить к Claude Code,
   Codex и любому другому рантайму
