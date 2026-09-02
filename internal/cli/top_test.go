@@ -208,3 +208,30 @@ func TestEmptyDatabaseSuggestsSetup(t *testing.T) {
 		t.Errorf("a stocked database must not be told to run setup, got:\n%s", buf.String())
 	}
 }
+
+// The cards print Russian genres, the README promises Russian genres, and the
+// user types Russian genres. The shorthand map is keyed in English for the
+// subcommand list, so the Russian spelling has to resolve through it.
+func TestGenreShorthandsAcceptBothLanguages(t *testing.T) {
+	for _, c := range []struct{ word, want string }{
+		{"comedy", "комедия"},
+		{"комедия", "комедия"},
+		{"Комедия", "комедия"},
+		{"war", "военный"},
+		{"военный", "военный"},
+		{"documentary", "документальный"},
+		{"документальный", "документальный"},
+	} {
+		got, ok := lookupGenre(c.word)
+		if !ok {
+			t.Errorf("%q not recognised as a genre", c.word)
+			continue
+		}
+		if got[0] != c.want {
+			t.Errorf("%q resolved to %q, want %q", c.word, got[0], c.want)
+		}
+	}
+	if _, ok := lookupGenre("нежанр"); ok {
+		t.Error("an unknown word must not resolve to a genre")
+	}
+}

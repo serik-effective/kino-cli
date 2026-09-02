@@ -92,6 +92,9 @@ func runTop(ctx context.Context, w io.Writer, a *app, o topOpts) error {
 			o.empty = true
 		}
 	}
+	if flagFormat == "json" {
+		return writeTopJSON(w, out, o, from, now, len(cands))
+	}
 	printTop(w, out, o, from, now, len(cands))
 	return nil
 }

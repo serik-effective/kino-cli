@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -11,18 +12,46 @@ import (
 // follows the configured language — Russian by default. Both spellings are kept
 // so the shorthands keep working if the catalogue is rebuilt in English.
 var genreAliases = map[string][]string{
-	"comedy":    {"комедия", "Comedy"},
-	"thriller":  {"триллер", "Thriller"},
-	"horror":    {"ужасы", "Horror"},
-	"sci-fi":    {"фантастика", "Science Fiction"},
-	"scifi":     {"фантастика", "Science Fiction"},
-	"action":    {"боевик", "Action"},
-	"animation": {"мультфильм", "Animation"},
-	"drama":     {"драма", "Drama"},
-	"crime":     {"криминал", "Crime"},
-	"fantasy":   {"фэнтези", "Fantasy"},
-	"family":    {"семейный", "Family"},
-	"adventure": {"приключения", "Adventure"},
+	"comedy":      {"комедия", "Comedy"},
+	"thriller":    {"триллер", "Thriller"},
+	"horror":      {"ужасы", "Horror"},
+	"sci-fi":      {"фантастика", "Science Fiction"},
+	"scifi":       {"фантастика", "Science Fiction"},
+	"action":      {"боевик", "Action"},
+	"animation":   {"мультфильм", "Animation"},
+	"drama":       {"драма", "Drama"},
+	"crime":       {"криминал", "Crime"},
+	"fantasy":     {"фэнтези", "Fantasy"},
+	"family":      {"семейный", "Family"},
+	"adventure":   {"приключения", "Adventure"},
+	"romance":     {"мелодрама", "Romance"},
+	"documentary": {"документальный", "Documentary"},
+	"history":     {"история", "History"},
+	"mystery":     {"детектив", "Mystery"},
+	"music":       {"музыка", "Music"},
+	"war":         {"военный", "War"},
+	"western":     {"вестерн", "Western"},
+}
+
+// lookupGenre resolves one word to the spellings to match in the catalogue.
+//
+// The shorthands are keyed in English because that is what reads well as a
+// subcommand, but the catalogue stores Russian and the user types Russian. A
+// map that only answers to "comedy" while every card on screen says "комедия"
+// is a trap, so the Russian spelling resolves too.
+func lookupGenre(word string) ([]string, bool) {
+	w := strings.ToLower(word)
+	if g, ok := genreAliases[w]; ok {
+		return g, true
+	}
+	for _, spellings := range genreAliases {
+		for _, s := range spellings {
+			if strings.ToLower(s) == w {
+				return spellings, true
+			}
+		}
+	}
+	return nil, false
 }
 
 // bindTop wires the ranking onto the root command. A bare "kino" is the whole
@@ -103,7 +132,7 @@ func parseTopArgs(args []string, a *app, all, why bool) (topOpts, error) {
 				o.days = t.Defaults.RuPeriod
 			}
 		default:
-			g, ok := genreAliases[arg]
+			g, ok := lookupGenre(arg)
 			if !ok {
 				return o, fmt.Errorf("не понимаю аргумент %q: ожидается число дней, \"ru\" или жанр", arg)
 			}

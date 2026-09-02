@@ -72,6 +72,17 @@ type Breakdown struct {
 	KidsPenalty float64
 	Final       float64
 
+	// The Points fields are what each term actually contributed to Final, in
+	// score points. The fields above are the raw ingredients — a smoothed
+	// rating on a 0..10 scale, a signal on 0..1 — and they cannot be added up
+	// or compared with each other. Anything reporting "why this score" needs
+	// the contributions, and recomputing them from the weights outside this
+	// package is how the explanation drifts away from the arithmetic.
+	RatingPoints     float64
+	ConfidencePoints float64
+	MainstreamPoints float64
+	FreshnessPoints  float64
+
 	// RatingSources names what the rating term was actually built from, so a
 	// reader can tell a film judged on two sources from one judged on none.
 	RatingSources []string
@@ -101,10 +112,12 @@ func Score(in Input, t config.Tuning, mode Mode) Breakdown {
 	w := t.Weights
 	// The 0..1 signals are lifted to the 0..10 scale of a rating before being
 	// mixed, otherwise their weights would be meaningless next to a 7.5.
-	b.Final = rating +
-		w.Confidence*b.Confidence*10 +
-		w.Mainstream*b.Mainstream*10 +
-		w.Freshness*b.Freshness*10
+	b.RatingPoints = rating
+	b.ConfidencePoints = w.Confidence * b.Confidence * 10
+	b.MainstreamPoints = w.Mainstream * b.Mainstream * 10
+	b.FreshnessPoints = w.Freshness * b.Freshness * 10
+
+	b.Final = b.RatingPoints + b.ConfidencePoints + b.MainstreamPoints + b.FreshnessPoints
 
 	b.Penalty = penalty(b.Arthouse, t.Arthouse)
 	if mode == Russian {
