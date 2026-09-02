@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "kino harvester",
+  "version": "0.1.0",
+  "description": "Собирает id фильмов со страниц Кинопоиска, которые вы открыли сами. Ничего не скачивает и никуда не ходит.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://www.kinopoisk.ru/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.kinopoisk.ru/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "kino harvester"
+  }
+}

@@ -1,0 +1,3 @@
+ALTER TABLE movies ADD COLUMN kp_views INTEGER;       -- показов в плеере Кинопоиска
+ALTER TABLE movies ADD COLUMN watch_online INTEGER;   -- 1 = доступен онлайн в РФ
+ALTER TABLE movies ADD COLUMN watch_offer TEXT;       -- "С мультиподпиской Яндекс Плюс", "79 ₽", …
