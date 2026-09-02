@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/sbeysenov/kino-cli/internal/model"
+	"github.com/serik-effective/kino-cli/internal/model"
 )
 
 // KPInfo is what one Kinopoisk player entry can teach the local database.

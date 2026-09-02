@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/sbeysenov/kino-cli/internal/model"
+	"github.com/serik-effective/kino-cli/internal/model"
 )
 
 func newTestStore(t *testing.T) *Store {

@@ -3,7 +3,7 @@ package pipeline
 import (
 	"testing"
 
-	"github.com/sbeysenov/kino-cli/internal/source/tmdb"
+	"github.com/serik-effective/kino-cli/internal/source/tmdb"
 )
 
 func details() *tmdb.Details {

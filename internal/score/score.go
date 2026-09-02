@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sbeysenov/kino-cli/internal/config"
+	"github.com/serik-effective/kino-cli/internal/config"
 )
 
 // Mode selects which audience the film is judged by.

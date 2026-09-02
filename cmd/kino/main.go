@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sbeysenov/kino-cli/internal/cli"
+	"github.com/serik-effective/kino-cli/internal/cli"
 )
 
 func main() {

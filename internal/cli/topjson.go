@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/sbeysenov/kino-cli/internal/store"
+	"github.com/serik-effective/kino-cli/internal/store"
 )
 
 // The JSON shape of a recommendation.

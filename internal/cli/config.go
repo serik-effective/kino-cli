@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/sbeysenov/kino-cli/internal/config"
-	"github.com/sbeysenov/kino-cli/internal/source/omdb"
+	"github.com/serik-effective/kino-cli/internal/config"
+	"github.com/serik-effective/kino-cli/internal/source/omdb"
 )
 
 func newConfigCmd() *cobra.Command {

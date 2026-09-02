@@ -3,7 +3,7 @@ package pipeline
 import (
 	"context"
 
-	"github.com/sbeysenov/kino-cli/internal/store"
+	"github.com/serik-effective/kino-cli/internal/store"
 )
 
 type ResolveOpts struct {

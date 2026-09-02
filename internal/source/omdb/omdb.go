@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sbeysenov/kino-cli/internal/httpx"
+	"github.com/serik-effective/kino-cli/internal/httpx"
 )
 
 const BaseURL = "https://www.omdbapi.com/"

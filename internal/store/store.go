@@ -15,7 +15,7 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	"github.com/sbeysenov/kino-cli/internal/model"
+	"github.com/serik-effective/kino-cli/internal/model"
 )
 
 //go:embed migrations/*.sql

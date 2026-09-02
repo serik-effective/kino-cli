@@ -11,7 +11,7 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 
-	"github.com/sbeysenov/kino-cli/internal/config"
+	"github.com/serik-effective/kino-cli/internal/config"
 )
 
 // newSetupCmd is the first run: a short interview, the API keys, and then the

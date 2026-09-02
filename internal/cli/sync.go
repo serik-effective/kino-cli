@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/sbeysenov/kino-cli/internal/pipeline"
-	"github.com/sbeysenov/kino-cli/internal/source/kinozal"
+	"github.com/serik-effective/kino-cli/internal/pipeline"
+	"github.com/serik-effective/kino-cli/internal/source/kinozal"
 )
 
 // newSyncCmd is the one command worth putting in cron.

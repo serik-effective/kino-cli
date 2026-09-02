@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sbeysenov/kino-cli/internal/source/imdb"
+	"github.com/serik-effective/kino-cli/internal/source/imdb"
 )
 
 type ImportIMDbOpts struct {

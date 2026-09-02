@@ -7,10 +7,10 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/sbeysenov/kino-cli/internal/model"
-	"github.com/sbeysenov/kino-cli/internal/source/kinozal"
-	"github.com/sbeysenov/kino-cli/internal/source/tmdb"
-	"github.com/sbeysenov/kino-cli/internal/store"
+	"github.com/serik-effective/kino-cli/internal/model"
+	"github.com/serik-effective/kino-cli/internal/source/kinozal"
+	"github.com/serik-effective/kino-cli/internal/source/tmdb"
+	"github.com/serik-effective/kino-cli/internal/store"
 )
 
 const SourceKinozal = "kinozal"

@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sbeysenov/kino-cli/internal/config"
-	"github.com/sbeysenov/kino-cli/internal/score"
-	"github.com/sbeysenov/kino-cli/internal/store"
+	"github.com/serik-effective/kino-cli/internal/config"
+	"github.com/serik-effective/kino-cli/internal/score"
+	"github.com/serik-effective/kino-cli/internal/store"
 )
 
 func decodeTop(t *testing.T, out []ranked, o topOpts) jsonTop {

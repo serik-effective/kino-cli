@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/sbeysenov/kino-cli/internal/model"
+	"github.com/serik-effective/kino-cli/internal/model"
 )
 
 func year(n int) *int { return &n }

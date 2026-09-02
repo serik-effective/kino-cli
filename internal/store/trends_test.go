@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sbeysenov/kino-cli/internal/model"
+	"github.com/serik-effective/kino-cli/internal/model"
 )
 
 func testStore(t *testing.T) *Store {

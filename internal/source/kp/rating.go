@@ -10,7 +10,7 @@ import (
 
 	"golang.org/x/text/encoding/charmap"
 
-	"github.com/sbeysenov/kino-cli/internal/httpx"
+	"github.com/serik-effective/kino-cli/internal/httpx"
 )
 
 // RatingBaseURL serves per-movie ratings as XML. It needs no key and no quota,

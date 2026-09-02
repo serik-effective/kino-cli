@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sbeysenov/kino-cli/internal/config"
+	"github.com/serik-effective/kino-cli/internal/config"
 )
 
 func scripted(input string) *asker {

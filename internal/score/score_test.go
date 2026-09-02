@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sbeysenov/kino-cli/internal/config"
+	"github.com/serik-effective/kino-cli/internal/config"
 )
 
 func tuning() config.Tuning { return config.DefaultTuning() }

@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sbeysenov/kino-cli/internal/httpx"
+	"github.com/serik-effective/kino-cli/internal/httpx"
 )
 
 const Endpoint = "https://query.wikidata.org/sparql"
@@ -79,7 +79,7 @@ func (c *Client) chunk(ctx context.Context, ids []string) (map[string]int, error
 	var resp sparqlResp
 	err := c.h.GetJSON(ctx, u, map[string]string{
 		"Accept":     "application/sparql-results+json",
-		"User-Agent": "kino-cli/0.1 (personal movie database; https://github.com/sbeysenov/kino-cli)",
+		"User-Agent": "kino-cli/0.1 (personal movie database; https://github.com/serik-effective/kino-cli)",
 	}, &resp)
 	if err != nil {
 		return nil, err

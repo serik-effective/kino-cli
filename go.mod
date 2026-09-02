@@ -1,4 +1,4 @@
-module github.com/sbeysenov/kino-cli
+module github.com/serik-effective/kino-cli
 
 go 1.26.4
 

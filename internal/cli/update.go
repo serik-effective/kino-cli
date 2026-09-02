@@ -9,8 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/sbeysenov/kino-cli/internal/model"
-	"github.com/sbeysenov/kino-cli/internal/pipeline"
+	"github.com/serik-effective/kino-cli/internal/model"
+	"github.com/serik-effective/kino-cli/internal/pipeline"
 )
 
 func newUpdateCmd() *cobra.Command {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/sbeysenov/kino-cli/internal/pipeline"
+	"github.com/serik-effective/kino-cli/internal/pipeline"
 )
 
 func newRefreshCmd() *cobra.Command {

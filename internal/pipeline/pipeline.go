@@ -6,12 +6,12 @@ import (
 	"context"
 	"sync"
 
-	"github.com/sbeysenov/kino-cli/internal/source/kinozal"
-	"github.com/sbeysenov/kino-cli/internal/source/kp"
-	"github.com/sbeysenov/kino-cli/internal/source/omdb"
-	"github.com/sbeysenov/kino-cli/internal/source/tmdb"
-	"github.com/sbeysenov/kino-cli/internal/source/wikidata"
-	"github.com/sbeysenov/kino-cli/internal/store"
+	"github.com/serik-effective/kino-cli/internal/source/kinozal"
+	"github.com/serik-effective/kino-cli/internal/source/kp"
+	"github.com/serik-effective/kino-cli/internal/source/omdb"
+	"github.com/serik-effective/kino-cli/internal/source/tmdb"
+	"github.com/serik-effective/kino-cli/internal/source/wikidata"
+	"github.com/serik-effective/kino-cli/internal/store"
 )
 
 type Deps struct {

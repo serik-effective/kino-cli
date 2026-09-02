@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/text/encoding/charmap"
 
-	"github.com/sbeysenov/kino-cli/internal/httpx"
+	"github.com/serik-effective/kino-cli/internal/httpx"
 )
 
 const BaseURL = "https://kinozal.me"

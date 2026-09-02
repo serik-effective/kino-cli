@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/sbeysenov/kino-cli/internal/httpx"
+	"github.com/serik-effective/kino-cli/internal/httpx"
 )
 
 const BaseURL = "https://api.poiskkino.dev"
