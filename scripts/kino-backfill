@@ -1,0 +1,92 @@
+#!/bin/sh
+# Многодневный добор каталога Кинопоиска в пределах суточной квоты.
+#
+# Каталог больше, чем помещается в 200 запросов в сутки: 1990–2026 — это около
+# 183 000 фильмов, ~730 запросов. Скрипт берёт по куску в день и запоминает, где
+# остановился, чтобы завтра продолжить, а не начинать сверху.
+#
+# Ставится в cron рядом с kino-daily, но НА ДРУГОЕ ВРЕМЯ — иначе они подерутся
+# за одну квоту:
+#   30 7 * * * $HOME/.local/bin/kino-backfill
+#
+# Когда добор закончится, скрипт перестанет тратить запросы сам: он допишет в
+# состояние отметку done и будет молча выходить. Удалить строку из cron можно,
+# но не обязательно.
+set -u
+
+BIN="${KINO_BIN:-$HOME/.local/bin/kino}"
+STATE="${KINO_BACKFILL_STATE:-$HOME/.local/share/kino/backfill.state}"
+LOG="${KINO_BACKFILL_LOG:-$HOME/.local/share/kino/backfill.log}"
+
+# Границы добора. Меняются только до первого запуска: после него состояние
+# ведёт себя как источник истины.
+FROM_YEAR="${KINO_BACKFILL_FROM:-1990}"
+TO_YEAR="${KINO_BACKFILL_TO:-2026}"
+MIN_VOTES="${KINO_BACKFILL_MIN_VOTES:-10}"
+
+# Сколько запросов оставить дневному обновлению. Оно тратит около двадцати;
+# запас вдвое — на случай, если каталог за ночь подрос.
+RESERVE="${KINO_BACKFILL_RESERVE:-40}"
+
+PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
+export PATH
+
+mkdir -p "$(dirname "$LOG")" "$(dirname "$STATE")"
+log() { printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >> "$LOG"; }
+
+[ -x "$BIN" ] || { log "нет $BIN"; exit 1; }
+
+# Состояние: одна строка "cursor=<голоса>" либо "done=1".
+cursor=0
+if [ -f "$STATE" ]; then
+  if grep -q '^done=1' "$STATE" 2>/dev/null; then
+    exit 0
+  fi
+  cursor=$(sed -n 's/^cursor=\([0-9]*\)$/\1/p' "$STATE" | head -1)
+  cursor="${cursor:-0}"
+fi
+
+# Остаток квоты на сегодня. Если распарсить не удалось, лучше не ходить в сеть
+# вовсе, чем угадать бюджет и выесть то, что нужно дневному обновлению.
+left=$("$BIN" config check 2>/dev/null \
+  | awk '/kinopoisk quota/{for(i=1;i<=NF;i++) if($i=="left,"||$i=="left") {print $(i-1); exit}}')
+case "$left" in
+  ''|*[!0-9]*) log "не смог прочитать остаток квоты — пропускаю день"; exit 0 ;;
+esac
+
+budget=$((left - RESERVE))
+if [ "$budget" -lt 10 ]; then
+  log "остаток $left, резерв $RESERVE — на сегодня хватит только дневному обновлению"
+  exit 0
+fi
+
+log "старт: годы $FROM_YEAR-$TO_YEAR, голосов >= $MIN_VOTES, курсор $cursor, бюджет $budget из $left"
+
+if [ "$cursor" -gt 0 ]; then
+  set -- --max-votes "$cursor"
+else
+  set --
+fi
+
+out=$("$BIN" update kp \
+        --from-year "$FROM_YEAR" --to-year "$TO_YEAR" \
+        --min-votes "$MIN_VOTES" --add-missing \
+        --max-pages "$budget" "$@" 2>&1)
+status=$?
+
+printf '%s\n' "$out" >> "$LOG"
+
+if [ "$status" -ne 0 ]; then
+  log "прогон завершился с кодом $status — курсор не двигаю, повторю завтра"
+  exit "$status"
+fi
+
+next=$(printf '%s\n' "$out" | sed -n 's/.*--max-votes \([0-9]*\).*/\1/p' | tail -1)
+if [ -n "$next" ]; then
+  printf 'cursor=%s\n' "$next" > "$STATE"
+  log "продолжу завтра с голосов <= $next"
+else
+  # Строки о продолжении нет — значит каталог кончился, а не бюджет.
+  printf 'done=1\n' > "$STATE"
+  log "добор завершён: годы $FROM_YEAR-$TO_YEAR пройдены целиком"
+fi

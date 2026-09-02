@@ -11,7 +11,12 @@ import (
 type UpdateKPOpts struct {
 	FromYear, ToYear int
 	MinVotes         int
-	Countries        []string
+	// MaxVotes resumes a walk that stopped: the catalogue is sorted by vote
+	// count descending, so starting again below the last film seen continues
+	// where the previous run ran out of budget instead of re-fetching — and
+	// re-paying for — everything above it.
+	MaxVotes  int
+	Countries []string
 	// MaxPages bounds the quota a single run may spend. Zero means every page
 	// the filter matches.
 	MaxPages int
@@ -28,6 +33,14 @@ type UpdateKPResult struct {
 	ByTitle   int
 	Added     int
 	Unmatched int
+
+	// LowestVotes is the vote count of the least-voted film folded in, and
+	// Stopped says the walk ended because it ran out of budget rather than
+	// because the catalogue ended. Together they are the resume point: a
+	// multi-day backfill that cannot say where it stopped starts over every
+	// day and spends its whole quota re-reading the same first pages.
+	LowestVotes int
+	Stopped     bool
 }
 
 // UpdateKP pulls a slice of the Kinopoisk catalogue and folds it into ours.
@@ -49,13 +62,18 @@ func (d *Deps) UpdateKP(ctx context.Context, o UpdateKPOpts) (UpdateKPResult, er
 	// results come back sorted by votes descending, so dropping the ceiling to
 	// the least-voted film of the previous band resumes where it stopped.
 	spent := 0
-	ceiling := 0 // unbounded
+	ceiling := o.MaxVotes
+	res.LowestVotes = -1
 	for {
 		lowest, pages, err := d.kpBand(ctx, o, ceiling, &spent, &res)
 		if err != nil {
 			return res, err
 		}
+		if lowest >= 0 && (res.LowestVotes < 0 || lowest < res.LowestVotes) {
+			res.LowestVotes = lowest
+		}
 		if o.MaxPages > 0 && spent >= o.MaxPages {
+			res.Stopped = true
 			return res, nil
 		}
 		next := nextCeiling(lowest, ceiling, o.MinVotes, pages)

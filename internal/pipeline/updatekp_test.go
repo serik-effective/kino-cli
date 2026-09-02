@@ -53,3 +53,22 @@ func TestCeilingAlwaysDescends(t *testing.T) {
 		lowest = ceiling
 	}
 }
+
+// A backfill spread over days has to say where it stopped. Without a resume
+// point every day starts from the top of the catalogue and spends its whole
+// quota re-reading pages it already paid for.
+func TestBandWalkReportsAResumePoint(t *testing.T) {
+	// nextCeiling is the arithmetic behind the resume hint: the value printed
+	// is the lowest vote count folded in, and asking again with that as the
+	// ceiling must land strictly below it, never on the same page forever.
+	const full = 10
+	lowest := 4202
+	next := nextCeiling(lowest, 0, 10, full)
+	if next != lowest {
+		t.Fatalf("resume point %d, want the lowest seen %d", next, lowest)
+	}
+	// And a second stop at the same count still descends.
+	if again := nextCeiling(lowest, next, 10, full); again >= next {
+		t.Errorf("second stop at the same count did not descend: %d", again)
+	}
+}

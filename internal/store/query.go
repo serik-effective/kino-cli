@@ -213,11 +213,59 @@ ORDER BY m.enriched_at IS NOT NULL, m.popularity DESC NULLS LAST LIMIT ?`, cutof
 
 // PendingRatings returns movies with a known Kinopoisk id whose ratings were
 // never fetched or are older than staleHours. Refreshing those is quota-free.
+// Rating staleness scales with the film's age.
+//
+// A rating moves fastest right after release, when a few thousand new votes can
+// shift it by tenths, and barely at all years later, when the same votes land on
+// a base of hundreds of thousands. Refreshing everything on one schedule spends
+// the run's budget re-reading numbers that did not change, while last week's
+// release — the one the recommendation is about — waits its turn behind a film
+// from 1962.
+//
+// The multipliers apply to whatever base the caller passes, so --stale-hours
+// still means what it says for the freshest films.
+//
+// The cutoff is built with strftime, not datetime: ratings_at is stored as
+// RFC3339 ("...T05:30:11Z") and datetime() returns "... 05:30:11". SQLite
+// compares those as text, where "T" sorts after a space, so every comparison
+// against a datetime() cutoff quietly answers "not stale" and nothing is ever
+// refreshed.
+const (
+	freshDays  = 30  // base cadence: daily by default
+	recentDays = 90  // ×3
+	yearDays   = 365 // ×14, then ×60 beyond a year
+)
+
 func (s *Store) PendingRatings(ctx context.Context, limit, staleHours int) ([]*model.Movie, error) {
-	cutoff := time.Now().UTC().Add(-time.Duration(staleHours) * time.Hour).Format(time.RFC3339)
-	rows, err := s.db.QueryContext(ctx, "SELECT "+movieCols+`
-FROM movies m WHERE m.kp_id IS NOT NULL AND (m.ratings_at IS NULL OR m.ratings_at < ?)
-ORDER BY m.ratings_at IS NOT NULL, m.ratings_at, m.popularity DESC NULLS LAST LIMIT ?`, cutoff, limit)
+	rows, err := s.db.QueryContext(ctx, `
+WITH aged AS (
+  SELECT `+movieCols+`,
+         CAST(julianday('now') - julianday(
+           COALESCE(NULLIF(m.release_date, ''),
+                    CASE WHEN m.year > 0 THEN printf('%04d-07-01', m.year) END)
+         ) AS INTEGER) AS age_days
+    FROM movies m
+   WHERE m.kp_id IS NOT NULL
+)
+SELECT `+movieCols+`
+  FROM aged m
+ WHERE m.ratings_at IS NULL
+    OR m.ratings_at < strftime('%Y-%m-%dT%H:%M:%SZ', 'now', printf('-%d hours',
+         CASE
+           WHEN m.age_days IS NULL OR m.age_days < ? THEN ?
+           WHEN m.age_days < ? THEN ? * 3
+           WHEN m.age_days < ? THEN ? * 14
+           ELSE ? * 60
+         END))
+ ORDER BY m.age_days IS NULL, m.age_days,
+          m.ratings_at IS NOT NULL, m.ratings_at,
+          m.popularity DESC NULLS LAST
+ LIMIT ?`,
+		freshDays, staleHours,
+		recentDays, staleHours,
+		yearDays, staleHours,
+		staleHours,
+		limit)
 	if err != nil {
 		return nil, err
 	}

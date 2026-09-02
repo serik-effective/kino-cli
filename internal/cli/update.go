@@ -36,6 +36,7 @@ func newUpdateKPCmd() *cobra.Command {
 	var (
 		fromYear, toYear int
 		minVotes         int
+		maxVotes         int
 		countries        []string
 		maxPages         int
 		addMissing       bool
@@ -65,7 +66,7 @@ func newUpdateKPCmd() *cobra.Command {
 
 			res, err := a.deps.UpdateKP(cmd.Context(), pipeline.UpdateKPOpts{
 				FromYear: fromYear, ToYear: toYear,
-				MinVotes: minVotes, Countries: countries,
+				MinVotes: minVotes, MaxVotes: maxVotes, Countries: countries,
 				MaxPages: maxPages, AddMissing: addMissing, DryRun: dryRun,
 			})
 			suffix := ""
@@ -75,6 +76,12 @@ func newUpdateKPCmd() *cobra.Command {
 			fmt.Fprintf(cmd.OutOrStdout(),
 				"фильмов %d: по kp_id %d, по imdb %d, по названию %d, добавлено с TMDB %d, не найдено %d%s\n",
 				res.Seen, res.ByKPID, res.ByIMDb, res.ByTitle, res.Added, res.Unmatched, suffix)
+			if res.Stopped && res.LowestVotes > 0 {
+				// Without this line a multi-day backfill has no way to resume
+				// and spends every day re-reading the same first pages.
+				fmt.Fprintf(cmd.OutOrStdout(),
+					"бюджет исчерпан; продолжить: --max-votes %d\n", res.LowestVotes)
+			}
 			return err
 		},
 	}
@@ -82,6 +89,8 @@ func newUpdateKPCmd() *cobra.Command {
 	f.IntVar(&fromYear, "from-year", 0, "нижняя граница года выпуска")
 	f.IntVar(&toYear, "to-year", 0, "верхняя граница года выпуска")
 	f.IntVar(&minVotes, "min-votes", 3000, "минимум голосов на Кинопоиске")
+	f.IntVar(&maxVotes, "max-votes", 0,
+		"верхняя граница голосов: продолжить обход с места остановки (0 = сверху)")
 	f.StringSliceVar(&countries, "countries", nil, "страны производства, например Россия,Казахстан")
 	f.IntVar(&maxPages, "max-pages", defaultKPPages,
 		"бюджет запросов: страниц по 250 фильмов (0 = без ограничения)")
